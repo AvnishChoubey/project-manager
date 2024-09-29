@@ -3,10 +3,10 @@ const ProjectController = require("../controllers/ProjectController");
 
 const router = express.Router();
 
-// router.get("/members" , ProjectController.getMembers);
-// router.post("/new/member", ProjectController.addNewMember);
-// router.post("/new/task" , ProjectController.addNewTask);
-// router.put("/update/task", ProjectController.updateTask);
-// router.put("/update/stage", ProjectController.updateStageOfTask);
+router.get("/projects", ProjectController.getMembers);
+router.get("/projects/:id", ProjectController.getProjectById);
+router.post("/projects", ProjectController.addNewMember);
+router.put("/projects/:id", ProjectController.updateProjectById);
+router.delete("/projects/:id", ProjectController.deleteProjectById);
 
 module.exports = router;
