@@ -1,13 +1,18 @@
 const mongoose = require("mongoose");
+const Task = require("./TaskModel");
+const User = require("./UserModel");
 
 const Schema = mongoose.Schema;
 
 const CommentSchema = new Schema({
-    commentedBy: {type: Schema.Types.ObjectId, ref: "User"},
-    content: String,
-    commentedOn: Date,
-    // updatedOn: Date,
-    // isEdited: Boolean,
+    userId: {type: Schema.Types.ObjectId, ref: "User"},
+    taskId: {type: Schema.Types.ObjectId, ref: "Task"},
+    content: {
+        type: String,
+        required: true
+    },
+    createdOn: Date
 });
 
-module.exports =  mongoose.model("CommentModel", CommentSchema);
+const Comment =  mongoose.model("Comment", CommentSchema);
+module.exports = Comment;

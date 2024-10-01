@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Project = require("./ProjectModel");
 const Stage = require("../constants/TaskType");
 
 const Schema = mongoose.Schema;
@@ -6,13 +7,11 @@ const Schema = mongoose.Schema;
 const TaskSchema = new Schema({
     heading: String,
     description: String,
-    // type: TaskType,
     creationDate: Date,
     expectedETA: Date,
-    stage: Stage,
-    comments: [{type: Schema.Types.ObjectId, ref: "Comment"}]
+    project: {type: Schema.Types.ObjectId, ref: "Project"}
 });
 
-const TaskModel =  mongoose.model("Task", TaskSchema);
+const Task =  mongoose.model("Task", TaskSchema);
 
-export default TaskModel;
+export default Task;

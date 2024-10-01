@@ -1,14 +1,17 @@
 const mongoose = require("mongoose");
+const Project = require("./ProjectModel");
 
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
     email: String,
     password: String,
-    salt: String,
-    tasks: [{type: Schema.Types.ObjectId, ref: "Task"}]
+    firstName: String, 
+    lastname: String,
+    role: String,
+    project: {type: Schema.Types.ObjectId, ref: "Project"}
 });
 
-const UserModel = mongoose.model("User", UserSchema);
+const User = mongoose.model("User", UserSchema);
 
-module.exports = UserModel;
+module.exports = User;

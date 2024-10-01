@@ -1,14 +1,14 @@
 const mongoose = require("mongoose");
+const User = require("./UserModel");
 
 const Schema = mongoose.Schema;
 
 const ProjectSchema = new Schema({
     name: String,
-    tasks: [{type: Schema.Types.ObjectId, ref: "Task"}],
-    contributors: [{type: Schema.Types.ObjectId, ref: "User"}],
+    description: String,
     admin: {type: Schema.Types.ObjectId, ref: "User"}
 });
 
-const ProjectModel = mongoose.model("Project", ProjectSchema);
+const Project = mongoose.model("Project", ProjectSchema);
 
-module.exports = ProjectModel;
+module.exports = Project;
