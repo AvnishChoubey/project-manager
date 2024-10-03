@@ -39,6 +39,7 @@ app.get("/signin", async (req, res) => {
                 jwt.sign(existingUser, SECRET_KEY, (error, token) => {
                     if(error) {
                         console.log(error);
+                        res.status(500).json({message: "cannot geenerate authorisation token"});
                     } else {
                         console.log(token);
                         res.status(201).json({token});
@@ -98,10 +99,14 @@ app.get("/projects/:projectId", async (req, res) => {
 
 app.put("/projects/:projectId", async (req, res) => {
     try {
-        const project = await Project.findByIdAndUpdate(req.params.projectId, req.body, {new: true});
+        const project = await Project.findById(req.params.projectId);
         if(project) {
-            console.log(project);
-            res.status(200).json({message: "Updated"});
+            if(project.admin === req.headers.userId) {
+                await Project.findByIdAndUpdate(req.params.projectId, req.body, {new: true});
+                res.status(200).json({message: "Updated"});
+            } else {
+                res.status(401).json({message: "unauthorised"});
+            }
         } else {
             res.status(404).json({message: "Not found"});
         }
@@ -138,6 +143,52 @@ app.get("/projects/:projectId/tasks/:taskId", async(req,res) => {
         }
     } catch (error) {
         res.status(500).send(error.message);
+    }
+});
+
+app.get("/projects/:projectId/tasks/:taskId/comments", async(req, res) => {
+    try {
+        const comments = await Comment.find({task: req.params.taskId});
+        res.status(200).json(comments);
+    } catch(error) {
+        res.status(500).send(error.message);
+    }
+});
+
+app.get("/projects/:projectId/tasks/:taskId/comments/:commentId", async(req, res) => {
+    try {
+        const comment = await Comment.findById(req.params.commentId);
+        if(comment) {
+            res.status(200).json(comment);
+        } else {
+            res.send(404).json({message: "comment not found"});
+        }
+    } catch(error) {
+        res.status(500).send(error.message);
+    }
+});
+
+app.put("/projects/:projectId/tasks/:taskId/comments/:commentId", async(req,res) => {
+    try {
+        await Comment.findByIdAndUpdate(req.params.commentId, req.body, {new: true});
+        res.status(201).json({message: "updaed successfully"});
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+});
+
+app.delete("/projects/:projectId/tasks/:taskId/comments/:commentId", async(req, res) => {
+    try {
+        const user = req.headers.userId;
+        const comment = await Comment.findById(req.params.commentId);
+        if(comment.user !== this.user) {
+            res.send(400).json({message: "you cannot delete this comment"});
+        } else {
+            await Comment.findByIdAndDelete(req.params.commentId);
+            res.send(201).json({message: "deleted successfully"});
+        }
+    } catch (error) {
+        res.status(500).json({message: error.message});
     }
 });
 
