@@ -13,12 +13,14 @@ import com.example.demo.repository.CommentRepository;
 import com.example.demo.repository.ProjectRepository;
 import com.example.demo.repository.TaskRepository;
 import com.example.demo.request.CommentRequest;
+import com.example.demo.request.EmailRequest;
 import com.example.demo.response.CommentResponse;
 import com.example.demo.transformer.ModelToResponse;
 import com.example.demo.transformer.RequestToModel;
 
 @Service
 public class CommentService {
+    @Autowired EmailService emailService;
     @Autowired ProjectRepository projectRepository;
     @Autowired TaskRepository taskRepository;
     @Autowired CommentRepository commentRepository;
@@ -73,6 +75,12 @@ public class CommentService {
             } else {
                 Comment comment = RequestToModel.commentRequestToComment(commentRequest);
                 Comment savedComment = commentRepository.save(comment);
+                EmailRequest emailRequest = EmailRequest.builder()
+                                                        .content("New comment has been added on task id=" + taskId + ". Please checkout.")
+                                                        .subject("Comment Added")
+                                                        .toEmail(optionalTask.get().getAssignedTo().getEmail())
+                                                        .build();
+                emailService.sendMail(emailRequest);
                 return ModelToResponse.commentToCommentResponse(savedComment);
             }
         }

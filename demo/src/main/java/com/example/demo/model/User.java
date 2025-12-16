@@ -41,4 +41,8 @@ public class User {
 
     private boolean active;
     // private String profilePictureUrl;
+
+    public String getUsername() {
+        return this.email;
+    }
 }

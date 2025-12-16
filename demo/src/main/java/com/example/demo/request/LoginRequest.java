@@ -1,20 +1,15 @@
 package com.example.demo.request;
 
-import com.example.demo.enums.Role;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Data
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
-public class UserRequest {
-    private String name;
+@NoArgsConstructor
+public class LoginRequest {
     private String email;
     private String password;
-    private Role role;
-    private boolean active;
 }

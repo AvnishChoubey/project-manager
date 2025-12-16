@@ -14,10 +14,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired UserRepository authRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
-        Optional<User> optionalUser = authRepository.findByName(name);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<User> optionalUser = authRepository.findByEmail(email);
         if(optionalUser.isEmpty()) {
-            throw new RuntimeException("Invalid username");
+            throw new RuntimeException("Invalid email");
         }
         return new CustomUserDetails(optionalUser.get());
     }
