@@ -1,6 +1,7 @@
 package com.example.demo.enums;
 
 public enum Status {
+  INVALID,
   TO_BE_PICKED,
   GATHERING_REQUIREMENTS,
   BLOCKED,

@@ -41,9 +41,4 @@ public class TaskController {
     public TaskResponse updateTask(@PathVariable("projectId") Long projectId, @PathVariable("taskId") Long taskId, @RequestBody TaskRequest  taskRequest) {
         return  taskService.updateTask(projectId, taskId, taskRequest);
     }
-
-    // @DeleteMapping("/{ }/delete")
-    // public void deleteTask(@PathVariable("projectId") Long projectId, @PathVariable("taskId") Long taskId, @PathVariable(" ") Long  ) {
-    //      taskService.deleteTask(projectId, taskId,  );
-    // }
 }

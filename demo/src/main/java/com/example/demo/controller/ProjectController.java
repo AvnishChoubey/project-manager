@@ -39,9 +39,4 @@ public class ProjectController {
     public ProjectResponse updateProject(@PathVariable("projectId") Long projectId, @RequestBody ProjectRequest projectRequest) {
         return projectService.updateProject(projectId, projectRequest);
     }
-
-    // @DeleteMapping("/{projectId}/delete")
-    // public void deleteProject(@PathVariable("projectId") Long projectId) {
-    //     return projectService.deleteProjectById(projectId);
-    // }
 }

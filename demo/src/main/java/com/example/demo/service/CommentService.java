@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Comment;
@@ -45,7 +46,7 @@ public class CommentService {
     }
 
 
-    public List<CommentResponse> getAllComments(Long projectId, Long taskId) {
+    public ResponseEntity<List<CommentResponse>> getAllComments(Long projectId, Long taskId) {
         Optional<Project> optionalProject = projectRepository.findById(projectId);
         if(optionalProject.isEmpty()) {
             throw new RuntimeException("Project not found with id " + projectId);
@@ -54,17 +55,16 @@ public class CommentService {
             if(optionalTask.isEmpty()) {
                 throw new RuntimeException("Task not found with id " + taskId);
             } else {
-                List<Comment> comments = commentRepository.findAll();
+                List<Comment> comments = commentRepository.findAllByTaskId(taskId);
                 List<CommentResponse> commentResponses = comments.stream()
-                    .filter(comment -> comment.getTask().getId().equals(taskId))
                     .map(ModelToResponse::commentToCommentResponse)
                     .toList();
-                return commentResponses;
+                return ResponseEntity.ok(commentResponses);
             }
         }
     }
 
-    public CommentResponse createComment(Long projectId, Long taskId, CommentRequest commentRequest) {
+    public ResponseEntity<CommentResponse> createComment(Long projectId, Long taskId, CommentRequest commentRequest) {
         Optional<Project> optionalProject = projectRepository.findById(projectId);
         if(optionalProject.isEmpty()) {
             throw new RuntimeException("Project not found with id " + projectId);
@@ -81,12 +81,12 @@ public class CommentService {
                                                         .toEmail(optionalTask.get().getAssignedTo().getEmail())
                                                         .build();
                 emailService.sendMail(emailRequest);
-                return ModelToResponse.commentToCommentResponse(savedComment);
+                return ResponseEntity.ok(ModelToResponse.commentToCommentResponse(savedComment));
             }
         }
     }
 
-    public CommentResponse updateComment(Long projectId, Long taskId, Long commentId, String commentContent) {
+    public ResponseEntity<CommentResponse> updateComment(Long projectId, Long taskId, Long commentId, String commentContent) {
         Optional<Project> optionalProject = projectRepository.findById(projectId);
         if(optionalProject.isEmpty()) {
             throw new RuntimeException("Project not found with id " + projectId);
@@ -102,7 +102,7 @@ public class CommentService {
                     Comment comment = optionalComment.get();
                     comment.setContent(commentContent);
                     Comment updatedComment = commentRepository.save(comment);
-                    return ModelToResponse.commentToCommentResponse(updatedComment);
+                    return ResponseEntity.ok(ModelToResponse.commentToCommentResponse(updatedComment));
                 }
             }
         }
