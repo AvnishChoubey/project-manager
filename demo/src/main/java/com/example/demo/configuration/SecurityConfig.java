@@ -1,6 +1,5 @@
 package com.example.demo.configuration;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,13 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.example.demo.repository.UserRepository;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    @Autowired UserRepository authRepository;
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -30,19 +25,19 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                 /* PROJECT ENDPOINTS */
                 .requestMatchers(HttpMethod.GET, "/api/v1/project/**").hasAnyRole("ADMIN", "PM", "USER", "VIEWER")
-                .requestMatchers(HttpMethod.POST, "/api/v1/project/**").hasAnyRole("ADMIN", "PM")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/project/**").hasAnyRole("ADMIN", "PM")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/project/**").hasAnyRole("ADMIN", "PM")
+                .requestMatchers(HttpMethod.POST, "/api/v1/project/**").hasAnyRole("PM")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/project/**").hasAnyRole("PM")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/project/**").hasAnyRole("PM")
                 /* TASK ENDPOINTS */
                 .requestMatchers(HttpMethod.GET, "/api/v1/project/*/task/**").hasAnyRole("ADMIN", "PM", "USER", "VIEWER")
-                .requestMatchers(HttpMethod.POST, "/api/v1/project/*/task/**").hasAnyRole("ADMIN", "PM", "USER")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/project/*/task/**").hasAnyRole("ADMIN", "PM", "USER")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/project/*/task/**").hasAnyRole("ADMIN", "PM")
+                .requestMatchers(HttpMethod.POST, "/api/v1/project/*/task/**").hasAnyRole("PM", "USER")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/project/*/task/**").hasAnyRole("PM", "USER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/project/*/task/**").hasAnyRole("PM")
                 /* COMMENT ENDPOINTS */
                 .requestMatchers(HttpMethod.GET, "/api/v1/project/*/task/*/comment/**").hasAnyRole("ADMIN", "PM", "USER", "VIEWER")
-                .requestMatchers(HttpMethod.POST, "/api/v1/project/*/task/*/comment/**").hasAnyRole("ADMIN", "PM", "USER")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/project/*/task/*/comment/**").hasAnyRole("ADMIN", "PM", "USER")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/project/*/task/*/comment/**").hasAnyRole("ADMIN", "PM")
+                .requestMatchers(HttpMethod.POST, "/api/v1/project/*/task/*/comment/**").hasAnyRole("PM", "USER")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/project/*/task/*/comment/**").hasAnyRole("PM", "USER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/project/*/task/*/comment/**").hasAnyRole("PM")
                 .anyRequest().authenticated());
             return httpSecurity.build();
     }

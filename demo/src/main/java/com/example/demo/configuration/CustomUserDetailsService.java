@@ -11,13 +11,13 @@ import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 
 public class CustomUserDetailsService implements UserDetailsService {
-    @Autowired UserRepository authRepository;
+    @Autowired UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<User> optionalUser = authRepository.findByEmail(email);
+        Optional<User> optionalUser = userRepository.findByEmail(email);
         if(optionalUser.isEmpty()) {
-            throw new RuntimeException("Invalid email");
+            throw new UsernameNotFoundException("Invalid email");
         }
         return new CustomUserDetails(optionalUser.get());
     }

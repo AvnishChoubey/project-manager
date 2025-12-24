@@ -10,11 +10,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.example.demo.model.User;
 
 public class CustomUserDetails implements UserDetails {
+    Long userId;
     String username;
     String password;
     List<GrantedAuthority> authorities;
 
     public CustomUserDetails(User user) {
+        this.userId = user.getId();
         this.username = user.getName();
         this.password = user.getPassword();
 
@@ -35,6 +37,10 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public String getUsername() {
         return this.username;
+    }
+
+    public Long getUserId() {
+        return this.userId;
     }
 
     @Override
