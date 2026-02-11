@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,22 +24,22 @@ public class TaskController {
     @Autowired TaskService taskService;
 
     @GetMapping("/")
-    public List<TaskResponse> getAllTasks(@PathVariable("projectId") Long projectId) {
+    public ResponseEntity<List<TaskResponse>> getAllTasks(@PathVariable("projectId") Long projectId) {
         return taskService.getAllTasks(projectId);
     }
 
     @GetMapping("/{taskId}")
-    public TaskResponse getTaskById(@PathVariable("projectId") Long projectId, @PathVariable("taskId") Long taskId) {
+    public ResponseEntity<TaskResponse> getTaskById(@PathVariable("projectId") Long projectId, @PathVariable("taskId") Long taskId) {
         return  taskService.getTaskById(projectId, taskId);
     }
 
     @PostMapping("/create")
-    public TaskResponse createTask(@PathVariable("projectId") Long projectId, @RequestBody TaskRequest  taskRequest) {
+    public ResponseEntity<TaskResponse> createTask(@PathVariable("projectId") Long projectId, @RequestBody TaskRequest  taskRequest) {
         return  taskService.createTask(projectId, taskRequest);
     }
 
     @PutMapping("/{taskId}/update")
-    public TaskResponse updateTask(@PathVariable("projectId") Long projectId, @PathVariable("taskId") Long taskId, @RequestBody TaskRequest  taskRequest) {
+    public ResponseEntity<TaskResponse> updateTask(@PathVariable("projectId") Long projectId, @PathVariable("taskId") Long taskId, @RequestBody TaskRequest  taskRequest) {
         return  taskService.updateTask(projectId, taskId, taskRequest);
     }
 }

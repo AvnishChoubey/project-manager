@@ -1,14 +1,17 @@
 package com.example.demo.service;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.example.demo.enums.Status;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Project;
 import com.example.demo.model.Task;
 import com.example.demo.repository.ProjectRepository;
@@ -23,79 +26,65 @@ public class TaskService {
     @Autowired ProjectRepository projectRepository;
     @Autowired TaskRepository taskRepository;
     
-    public List<TaskResponse> getAllTasks(Long projectId) {
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
-        if(optionalProject.isEmpty()) {
-            throw new RuntimeException("Project not found with id " + projectId);
-        } else {
-            List<Task> tasks = taskRepository.findAllByProjectId(projectId);
-            List<TaskResponse> taskResponses = new ArrayList<>();
-            for(int i=0;i<tasks.size();i++) {
-                taskResponses.add(ModelToResponse.taskToTaskResponse(tasks.get(i)));
-            }
-            return taskResponses;
+    public ResponseEntity<List<TaskResponse>> getAllTasks(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project not found with id " + projectId));
+
+        List<Task> tasks = taskRepository.findAllByProjectId(project.getId());
+        
+        List<TaskResponse> taskResponses = new ArrayList<>();
+        for(int i=0;i<tasks.size();i++) {
+            taskResponses.add(ModelToResponse.taskToTaskResponse(tasks.get(i)));
         }
+        
+        return ResponseEntity.ok(taskResponses);
     }
 
-    public TaskResponse getTaskById(Long projectId, Long taskId) {
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
-        if(optionalProject.isEmpty()) {
-            throw new RuntimeException("Project not found with id " + projectId);
-        } else {
-            Optional<Task> optionalTask = taskRepository.findById(taskId);
-            if(optionalTask.isEmpty()) {
-                throw new RuntimeException("Task not found with id " + taskId);
-            } else {
-                Task task = optionalTask.get();
-                if(!task.getProject().getId().equals(projectId)) {
-                    throw new RuntimeException("Task with id " + taskId + " does not belong to project with id " + projectId);
-                } else {
-                    return ModelToResponse.taskToTaskResponse(task);
-                }
-            }
-        }
+    public ResponseEntity<TaskResponse> getTaskById(Long projectId, Long taskId) {
+        Task task = taskRepository.findByIdAndProjectId(taskId, projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task not found with id " + taskId));
+
+        TaskResponse taskResponse = ModelToResponse.taskToTaskResponse(task);
+        
+        return ResponseEntity.ok(taskResponse);
     }
 
-    public TaskResponse createTask(Long projectId, @RequestBody TaskRequest taskRequest) {
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
-        if(optionalProject.isEmpty()) {
-            throw new RuntimeException("Project not found with id " + projectId);
-        } else {
-            Project project = optionalProject.get();
-            Task task = RequestToModel.taskRequestToTask(taskRequest);
-            task.setStatus(Status.TO_BE_PICKED);
-            task.setProject(project);
-            Task savedTask = taskRepository.save(task);
-            return ModelToResponse.taskToTaskResponse(savedTask);
-        }
+    public ResponseEntity<TaskResponse> createTask(Long projectId, @RequestBody TaskRequest taskRequest) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project not found with id " + projectId));
+        
+        Task task = RequestToModel.taskRequestToTask(taskRequest);
+        
+        task.setStatus(Status.TO_BE_PICKED);
+        task.setProject(project);
+
+        Task savedTask = taskRepository.save(task);
+        TaskResponse taskResponse = ModelToResponse.taskToTaskResponse(savedTask);
+        
+        URI location = URI.create("/project/" + projectId + "/task/" + savedTask.getId());
+        
+        return ResponseEntity.created(location).body(taskResponse);
     }
 
-    public TaskResponse updateTask(Long projectId, Long taskId, @RequestBody TaskRequest taskRequest) {
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
-        if(optionalProject.isEmpty()) {
-            throw new RuntimeException("Project not found with id " + projectId);
-        } else {
-            Optional<Task> optionalTask = taskRepository.findById(taskId);
-            if(optionalTask.isEmpty()) {
-                throw new RuntimeException("Task not found with id " + taskId);
-            } else {
-                Task task = optionalTask.get();
-                if(!task.getProject().getId().equals(projectId)) {
-                    throw new RuntimeException("Task with id " + taskId + " does not belong to project with id " + projectId);
-                } else {
-                    if(!taskRequest.getTitle().isEmpty())
-                    task.setTitle(taskRequest.getTitle());
-                    
-                    if(!taskRequest.getDescription().isEmpty())
-                    task.setDescription(taskRequest.getDescription());
-                    
-                    if(taskRequest.getStatus() != null)
-                    task.setStatus(taskRequest.getStatus());
+    public ResponseEntity<TaskResponse> updateTask(Long projectId, Long taskId, @RequestBody TaskRequest taskRequest) {
+        Task task = taskRepository.findByIdAndProjectId(taskId, projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task not found with id " + taskId));
 
-                    Task updatedTask = taskRepository.save(task);
-                    return ModelToResponse.taskToTaskResponse(updatedTask);
-                }
-            }
+        if (StringUtils.hasText(taskRequest.getTitle())) {
+            task.setTitle(taskRequest.getTitle());
         }
+
+        if (StringUtils.hasText(taskRequest.getDescription())) {
+            task.setDescription(taskRequest.getDescription());
+        }
+
+        if (taskRequest.getStatus() != null) {
+            task.setStatus(taskRequest.getStatus());
+        }
+
+        Task updatedTask = taskRepository.save(task);
+        TaskResponse taskResponse = ModelToResponse.taskToTaskResponse(updatedTask);
+        
+        return ResponseEntity.ok(taskResponse);
     }
 }

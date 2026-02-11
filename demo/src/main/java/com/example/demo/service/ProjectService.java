@@ -1,12 +1,15 @@
 package com.example.demo.service;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Project;
 import com.example.demo.repository.ProjectRepository;
 import com.example.demo.request.ProjectRequest;
@@ -18,49 +21,54 @@ import com.example.demo.transformer.RequestToModel;
 public class ProjectService {
     @Autowired ProjectRepository projectRepository;
 
-    public List<ProjectResponse> getAllProjects()
-    {
+    public ResponseEntity<List<ProjectResponse>> getAllProjects() {
         List<Project> projects = projectRepository.findAll();
+
         List<ProjectResponse> projectResponses = new ArrayList<>();
-        for(int i=0;i<projects.size();i++)
-        {
+        for(int i=0;i<projects.size();i++) {
             projectResponses.add(ModelToResponse.projectToProjectResponse(projects.get(i)));
         }
-        return projectResponses;
+        
+        return ResponseEntity.ok(projectResponses);
     }
 
-    public ProjectResponse getProjectById(Long projectId)
-    {
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
-        if(optionalProject.isEmpty()) {
-            throw new RuntimeException("Project not found");
-        } else {
-            return ModelToResponse.projectToProjectResponse(optionalProject.get());
-        }
+    public ResponseEntity<ProjectResponse> getProjectById(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project not found with id " + projectId));
+
+        ProjectResponse projectResponse = ModelToResponse.projectToProjectResponse(project);
+
+        return ResponseEntity.ok(projectResponse);
     }
 
-    public ProjectResponse createProject(ProjectRequest projectRequest)
-    {
+    public ResponseEntity<ProjectResponse> createProject(ProjectRequest projectRequest) {
         Project project = RequestToModel.projectRequestToProject(projectRequest);
+        
         Project savedProject = projectRepository.save(project);
-        return ModelToResponse.projectToProjectResponse(savedProject);
+        
+        URI location = URI.create("/projects/" + savedProject.getId());
+        
+        ProjectResponse projectResponse = ModelToResponse.projectToProjectResponse(savedProject);
+        
+        return ResponseEntity.created(location).body(projectResponse);
     }
 
-    public ProjectResponse updateProject(Long projectId, ProjectRequest projectRequest)
-    {
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
-        if(optionalProject.isEmpty()) {
-            throw new RuntimeException("Project not found");
-        } else {
-            Project project = optionalProject.get();
-            if(projectRequest.getName() != null) {
-                project.setName(projectRequest.getName());
-            }
-            if(projectRequest.getDescription() != null) {
-                project.setDescription(projectRequest.getDescription());
-            }
-            Project updatedProject = projectRepository.save(project);
-            return ModelToResponse.projectToProjectResponse(updatedProject);
+    public ResponseEntity<ProjectResponse> updateProject(Long projectId, ProjectRequest projectRequest) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project not found with id " + projectId));
+    
+        if(StringUtils.hasText(projectRequest.getName())) {
+            project.setName(projectRequest.getName());
         }
+
+        if(StringUtils.hasText(projectRequest.getDescription())) {
+            project.setDescription(projectRequest.getDescription());
+        }
+        
+        Project updatedProject = projectRepository.save(project);
+        
+        ProjectResponse projectResponse = ModelToResponse.projectToProjectResponse(updatedProject);
+        
+        return ResponseEntity.ok(projectResponse);
     }
 }

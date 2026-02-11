@@ -10,14 +10,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.example.demo.model.User;
 
 public class CustomUserDetails implements UserDetails {
-    Long userId;
-    String username;
-    String password;
-    List<GrantedAuthority> authorities;
+    private final Long userId;
+    private final String email;
+    private final String password;
+    private final List<GrantedAuthority> authorities;
 
     public CustomUserDetails(User user) {
         this.userId = user.getId();
-        this.username = user.getName();
+
+        this.email = user.getEmail();
         this.password = user.getPassword();
 
         List<GrantedAuthority> grantedAuthorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
@@ -36,7 +37,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.username;
+        return this.email;
     }
 
     public Long getUserId() {
@@ -56,5 +57,10 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
+    }
+
+    @Override
+    public boolean isEnabled() { 
+        return true; 
     }
 }

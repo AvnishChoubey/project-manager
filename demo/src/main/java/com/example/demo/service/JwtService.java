@@ -12,28 +12,37 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Service
 public class JwtService {
 
     @Value("${secret_key}")
     private String SECRET_KEY;
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 30;
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 30;    /* 30 hrs */
 
     private SecretKey getSignInKey() {
+        log.info("JWT SERVICE GET SIGNIN KEY METHOD CALLED");
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes); 
+        log.info("KEYBYTES ARRAY = " + keyBytes);
+        SecretKey secretKey = Keys.hmacShaKeyFor(keyBytes);
+        log.info("SECRET KEY GENERATED = " + secretKey);
+        return secretKey;
     }
 
     public String generateToken(Long userId, String email) {
-        return Jwts.builder()
+        log.info("GENERATING AUTHENTICATION TOKEN");
+        String token = Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(getSignInKey())
                 .compact();
+        
+        log.info("JWT SERVICE TOKEN GENERATED = " + token);
+        return token;
     }
 
     private Claims extractAllClaims(String token) {
@@ -44,7 +53,7 @@ public class JwtService {
                 .getPayload();
     }
 
-    public String extractUsername(String token) {
+    public String extractEmail(String token) {
         return extractAllClaims(token).getSubject();
     }
 

@@ -15,6 +15,9 @@ public class RequestToModel {
         return User.builder()
                 .name(userRequest.getName())
                 .email(userRequest.getEmail())
+                .password(userRequest.getPassword())
+                .active(userRequest.isActive())
+                .role(userRequest.getRole())
                 .build();
     }
 
